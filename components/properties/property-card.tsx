@@ -6,11 +6,13 @@ import { BedIcon, BathIcon, SquareIcon } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { PropertyAmenities } from "./property-amenities";
 import type { TokkoProperty } from "@/types/property";
 
 interface PropertyCardProps {
   property: TokkoProperty;
+  className?: string;
 }
 
 function formatPrice(price?: string, operations?: string[]) {
@@ -20,7 +22,7 @@ function formatPrice(price?: string, operations?: string[]) {
   return "Consultar precio";
 }
 
-export function PropertyCard({ property }: PropertyCardProps) {
+export function PropertyCard({ property, className }: PropertyCardProps) {
   const imageUrl =
     property.cover_picture?.url ??
     property.cover_picture?.thumb ??
@@ -30,8 +32,8 @@ export function PropertyCard({ property }: PropertyCardProps) {
   const isRent = operation?.toLowerCase().includes("rent") ?? false;
 
   return (
-    <Card className="overflow-hidden group hover:shadow-lg transition-shadow pt-0">
-      <CardHeader className="p-0">
+    <Card className={cn("flex h-full min-w-0 flex-col overflow-hidden group hover:shadow-lg transition-shadow pt-0 w-full", className)}>
+      <CardHeader className="shrink-0 p-0">
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
           <Image
             src={imageUrl}
@@ -47,18 +49,18 @@ export function PropertyCard({ property }: PropertyCardProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-4 space-y-3">
-        <div>
-          <h3 className="font-semibold text-lg line-clamp-1">
+      <CardContent className="flex min-w-0 flex-1 flex-col gap-3 overflow-hidden p-4">
+        <div className="min-w-0">
+          <h3 className="font-semibold text-lg line-clamp-2 break-words">
             {property.publication_title ??
               `${property.type?.name ?? "Propiedad"} en ${property.location?.short_location ?? "—"}`}
           </h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="line-clamp-2 break-words text-sm text-muted-foreground">
             {property.location?.short_location ?? "Sin ubicación"}
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+        <div className="flex min-w-0 flex-wrap gap-4 text-sm text-muted-foreground">
           {property.room_amount != null && property.room_amount > 0 && (
             <span className="flex items-center gap-1">
               <BedIcon className="size-4" />
@@ -81,14 +83,14 @@ export function PropertyCard({ property }: PropertyCardProps) {
         </div>
 
         {property.amenities && property.amenities.length > 0 && (
-          <PropertyAmenities amenities={property.amenities} />
+          <PropertyAmenities amenities={property.amenities} className="min-w-0" />
         )}
 
-        <p className="font-semibold text-primary">
+        <p className="mt-auto break-words font-semibold text-primary">
           {formatPrice(property.web_price, property.available_operations)}
         </p>
       </CardContent>
-      <CardFooter className="p-4 pt-0">
+      <CardFooter className="mt-auto shrink-0 p-4 pt-0">
         <Button asChild variant="outline" className="w-full">
           <Link href={`/propiedades/${property.id}`}>Ver más</Link>
         </Button>

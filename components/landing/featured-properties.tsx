@@ -2,7 +2,7 @@
 
 import { useProperties } from "@/hooks/use-properties";
 import { PropertyCard } from "@/components/properties/property-card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PropertyCardSkeleton } from "@/components/properties/property-card-skeleton";
 import {
   Carousel,
   CarouselContent,
@@ -34,11 +34,23 @@ export function FeaturedProperties() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 gap-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-[4/3] rounded-xl" />
-            ))}
-          </div>
+          <Carousel
+            opts={{ align: "start", slidesToScroll: 1 }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <CarouselItem
+                  key={i}
+                  className="flex min-w-0 pl-2 md:pl-4 basis-full md:basis-[calc((100%-1rem)/2)] lg:basis-[calc((100%-2rem)/3)]"
+                >
+                  <PropertyCardSkeleton />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden lg:flex -left-12" />
+            <CarouselNext className="hidden lg:flex -right-12" />
+          </Carousel>
         ) : isError ? (
           <div className="text-center py-12 text-muted-foreground">
             No pudimos cargar las propiedades. Intentá de nuevo más tarde.
@@ -59,7 +71,7 @@ export function FeaturedProperties() {
               {properties.map((property) => (
                 <CarouselItem
                   key={property.id}
-                  className="pl-2 md:pl-4 basis-full lg:basis-[calc((100%-2.5rem)/3.5)]"
+                  className="flex min-w-0 pl-2 md:pl-4 basis-full md:basis-[calc((100%-1rem)/2)] lg:basis-[calc((100%-2rem)/3)]"
                 >
                   <PropertyCard property={property} />
                 </CarouselItem>

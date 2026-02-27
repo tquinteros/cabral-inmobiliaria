@@ -13,21 +13,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { SearchIcon } from "lucide-react";
 import { LocationCombobox } from "./location-combobox";
-import type { PropertyOperation, PropertyType } from "@/types/property";
-
-const PROPERTY_TYPES: { value: PropertyType; label: string }[] = [
-  { value: "house", label: "Casa" },
-  { value: "apartment", label: "Departamento" },
-  { value: "terrain", label: "Terreno" },
-  { value: "office", label: "Oficina" },
-  { value: "local", label: "Local" },
-  { value: "other", label: "Otro" },
-];
+import { usePropertyTypes } from "@/hooks/use-property-types";
+import type { PropertyOperation } from "@/types/property";
 
 export function SearchFilters() {
   const router = useRouter();
+  const { data: propertyTypes = [], isLoading } = usePropertyTypes();
   const [operation, setOperation] = React.useState<PropertyOperation>("sell");
-  const [type, setType] = React.useState<PropertyType | "">("");
+  const [type, setType] = React.useState<string>("");
   const [location, setLocation] = React.useState("");
 
   const handleSearch = () => {
@@ -55,15 +48,16 @@ export function SearchFilters() {
         <div className="flex-1 min-w-[160px]">
           <Select
             value={type}
-            onValueChange={(v) => setType(v ? (v as PropertyType) : "")}
+            onValueChange={(v) => setType(v ?? "")}
+            disabled={isLoading}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Tipo de propiedad" />
+              <SelectValue placeholder={isLoading ? "Cargando..." : "Tipo de propiedad"} />
             </SelectTrigger>
             <SelectContent>
-              {PROPERTY_TYPES.map((t) => (
-                <SelectItem key={t.value} value={t.value}>
-                  {t.label}
+              {propertyTypes.map((t) => (
+                <SelectItem key={t.id} value={String(t.id)}>
+                  {t.name}
                 </SelectItem>
               ))}
             </SelectContent>

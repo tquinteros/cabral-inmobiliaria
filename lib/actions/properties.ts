@@ -98,14 +98,19 @@ export async function getProperties(
   const offset = (page - 1) * limit;
 
   try {
+    const params: Record<string, string | number> = {
+      key: TOKKO_API_KEY ?? "",
+      format: "json",
+      lang: "es_ar",
+      limit,
+      offset,
+    };
+    if (filters?.type) params.type = filters.type;
+    if (filters?.operation) params.operation = filters.operation;
+    if (filters?.location) params.location = filters.location;
+
     const { data } = await axios.get(`${TOKKO_BASE_URL}/v1/property/`, {
-      params: {
-        key: TOKKO_API_KEY,
-        format: "json",
-        lang: "es_ar",
-        limit,
-        offset,
-      },
+      params,
       timeout: 10000,
     });
 

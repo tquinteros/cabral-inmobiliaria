@@ -10,7 +10,7 @@ export type PropertyType =
 
 export interface PropertySearchParams {
   operation?: PropertyOperation;
-  type?: PropertyType;
+  type?: PropertyType | string; // Tokko type id (number as string) or legacy PropertyType
   location?: string;
   page?: number;
   limit?: number;

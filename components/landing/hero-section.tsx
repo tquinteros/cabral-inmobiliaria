@@ -1,10 +1,41 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { SearchFilters } from "./search-filters";
 
 export function HeroSection() {
+  const [height, setHeight] = useState<string>("100vh");
+
+  useEffect(() => {
+    const updateHeight = () => {
+      const header = document.getElementById("site-header");
+      if (header) {
+        const headerHeight = header.getBoundingClientRect().height;
+        setHeight(`calc(100vh - ${headerHeight}px)`);
+      } else {
+        setHeight("100vh");
+      }
+    };
+
+    updateHeight();
+
+    const resizeObserver = new ResizeObserver(updateHeight);
+    const header = document.getElementById("site-header");
+    if (header) resizeObserver.observe(header);
+
+    window.addEventListener("resize", updateHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateHeight);
+    };
+  }, []);
+
   return (
-    <section className="relative min-h-[85vh] flex flex-col items-center justify-center px-4 py-20 overflow-hidden">
+    <section
+      className="relative flex flex-col items-center justify-center px-4 py-20 overflow-hidden"
+      style={{ minHeight: height, height }}
+    >
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
