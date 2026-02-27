@@ -99,8 +99,8 @@ export default function PropertyDetailPage() {
                     );
                   })}
                 </CarouselContent>
-                <CarouselPrevious className="hidden sm:flex -left-4 sm:-left-8" />
-                <CarouselNext className="hidden sm:flex -right-4 sm:-right-8" />
+                <CarouselPrevious className="hidden sm:flex left-4 sm:left-4" />
+                <CarouselNext className="hidden sm:flex right-4 sm:right-4" />
               </Carousel>
 
               {/* Thumbnails carousel */}

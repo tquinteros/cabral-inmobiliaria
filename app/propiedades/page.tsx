@@ -47,8 +47,8 @@ function PropiedadesContent() {
 
   return (
     <main className="min-h-screen">
-      <div className="py-12 px-4">
-        <div className="container mx-auto">
+      <div className="py-12">
+        <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row gap-8">
             <PropertyFiltersSidebar />
 
