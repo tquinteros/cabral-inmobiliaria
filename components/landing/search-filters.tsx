@@ -5,13 +5,6 @@ import { useRouter } from "next/navigation";
 import { CheckIcon, ChevronDownIcon, SearchIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -39,6 +32,7 @@ export function SearchFilters() {
   const [operation, setOperation] = React.useState<PropertyOperation>("sell");
   const [type, setType] = React.useState<string>("");
   const [location, setLocation] = React.useState("");
+  const [typesOpen, setTypesOpen] = React.useState(false);
   const [locationOpen, setLocationOpen] = React.useState(false);
 
   const handleSearch = () => {
@@ -64,22 +58,79 @@ export function SearchFilters() {
         </Tabs>
 
         <div className="flex-1 min-w-[160px]">
-          <Select
-            value={type}
-            onValueChange={(v) => setType(v ?? "")}
-            disabled={isLoading}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={isLoading ? "Cargando..." : "Tipo de propiedad"} />
-            </SelectTrigger>
-            <SelectContent>
-              {propertyTypes.map((t) => (
-                <SelectItem key={t.id} value={String(t.id)}>
-                  {t.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={typesOpen} onOpenChange={setTypesOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={typesOpen}
+                disabled={isLoading}
+                className="w-full justify-between font-normal h-9 px-3 py-2"
+              >
+                {isLoading
+                  ? "Cargando tipos..."
+                  : type
+                    ? propertyTypes.find((t) => String(t.id) === type)?.name ??
+                      "Tipo de propiedad"
+                    : "Tipo de propiedad"}
+                <ChevronDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-(--radix-popover-trigger-width) p-0"
+              align="start"
+            >
+              <Command
+                filter={(value, search) => {
+                  const q = search.trim().toLowerCase();
+                  if (value === "__all__")
+                    return !q || "todos los tipos".includes(q) ? 1 : 0;
+                  if (!q) return 1;
+                  return value.toLowerCase().includes(q) ? 1 : 0;
+                }}
+              >
+                <CommandInput placeholder="Buscar tipo..." />
+                <CommandList className="max-h-[240px]">
+                  <CommandEmpty>No se encontró el tipo.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="__all__"
+                      onSelect={() => {
+                        setType("");
+                        setTypesOpen(false);
+                      }}
+                    >
+                      <CheckIcon
+                        className={cn(
+                          "mr-2 size-4",
+                          !type ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      Todos los tipos
+                    </CommandItem>
+                    {propertyTypes.map((t) => (
+                      <CommandItem
+                        key={t.id}
+                        value={t.name}
+                        onSelect={() => {
+                          setType(String(t.id));
+                          setTypesOpen(false);
+                        }}
+                      >
+                        <CheckIcon
+                          className={cn(
+                            "mr-2 size-4",
+                            type === String(t.id) ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {t.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="flex-1 min-w-[200px]">

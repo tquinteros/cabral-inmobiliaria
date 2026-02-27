@@ -72,9 +72,9 @@ export default function PropertyDetailPage() {
             {property.type?.name ?? "Propiedad"} en{" "}
             {property.location?.short_location ?? "—"}
           </h1>
-          <p className="text-muted-foreground mb-6">
+          {/* <p className="text-muted-foreground mb-6">
             {property.reference_code && `Código: ${property.reference_code}`}
-          </p>
+          </p> */}
 
           <div className="flex flex-wrap gap-6 text-muted-foreground mb-6">
             {property.room_amount != null && property.room_amount > 0 && (
