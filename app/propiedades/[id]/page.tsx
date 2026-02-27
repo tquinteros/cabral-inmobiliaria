@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
@@ -8,6 +9,14 @@ import { BedIcon, BathIcon, SquareIcon, ArrowLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PropertyAmenities } from "@/components/properties/property-amenities";
 import { getPropertyById } from "@/lib/actions/properties";
+
+const PropertyMap = dynamic(
+  () =>
+    import("@/components/properties/property-map").then((mod) => ({
+      default: mod.PropertyMap,
+    })),
+  { ssr: false, loading: () => <div className="rounded-xl h-[320px] bg-muted animate-pulse" /> }
+);
 
 export default function PropertyDetailPage() {
   const params = useParams();
@@ -103,6 +112,17 @@ export default function PropertyDetailPage() {
               <p className="text-muted-foreground whitespace-pre-wrap">
                 {property.description}
               </p>
+            </div>
+          )}
+
+          {property.geo_lat && property.geo_long && (
+            <div className="mt-8">
+              <h2 className="text-xl font-semibold mb-3">Ubicación</h2>
+              <PropertyMap
+                lat={property.geo_lat}
+                long={property.geo_long}
+                title={property.location?.short_location ?? property.type?.name ?? "Propiedad"}
+              />
             </div>
           )}
 

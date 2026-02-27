@@ -34,7 +34,7 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
   return (
     <Card className={cn("flex h-full min-w-0 flex-col overflow-hidden group hover:shadow-lg transition-shadow pt-0 w-full", className)}>
       <CardHeader className="shrink-0 p-0">
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+        <Link href={`/propiedades/${property.id}`} className="relative aspect-4/3 overflow-hidden bg-muted">
           <Image
             src={imageUrl}
             alt={property.type?.name ?? "Propiedad"}
@@ -47,15 +47,15 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
               {isRent ? "Alquiler" : "Venta"}
             </Badge>
           </div>
-        </div>
+        </Link>
       </CardHeader>
       <CardContent className="flex min-w-0 flex-1 flex-col gap-3 overflow-hidden p-4">
         <div className="min-w-0">
-          <h3 className="font-semibold text-lg line-clamp-2 break-words">
+          <h3 className="font-semibold text-lg line-clamp-2 wrap-break-word">
             {property.publication_title ??
               `${property.type?.name ?? "Propiedad"} en ${property.location?.short_location ?? "—"}`}
           </h3>
-          <p className="line-clamp-2 break-words text-sm text-muted-foreground">
+          <p className="line-clamp-2 wrap-break-word text-sm text-muted-foreground">
             {property.location?.short_location ?? "Sin ubicación"}
           </p>
         </div>
@@ -86,7 +86,7 @@ export function PropertyCard({ property, className }: PropertyCardProps) {
           <PropertyAmenities amenities={property.amenities} className="min-w-0" />
         )}
 
-        <p className="mt-auto break-words font-semibold text-primary">
+        <p className="mt-auto wrap-break-word font-semibold text-primary">
           {formatPrice(property.web_price, property.available_operations)}
         </p>
       </CardContent>

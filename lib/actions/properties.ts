@@ -28,6 +28,8 @@ interface TokkoRawProperty {
   reference_code?: string;
   type?: { name?: string };
   location?: { short_location?: string };
+  geo_lat?: string;
+  geo_long?: string;
   publication_title?: string;
   photos?: TokkoPhoto[];
   web_price?: boolean;
@@ -72,6 +74,8 @@ function mapTokkoToProperty(raw: TokkoRawProperty): TokkoProperty {
     location: raw.location
       ? { short_location: raw.location.short_location }
       : undefined,
+    geo_lat: raw.geo_lat,
+    geo_long: raw.geo_long,
     web_price: priceStr,
     available_operations:
       availableOperations.length ? availableOperations : ["sell"],

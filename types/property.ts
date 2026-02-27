@@ -40,6 +40,8 @@ export interface TokkoProperty {
   publication_title?: string;
   type?: TokkoPropertyType;
   location?: TokkoLocation;
+  geo_lat?: string;
+  geo_long?: string;
   web_price?: string;
   available_operations?: string[];
   room_amount?: number;

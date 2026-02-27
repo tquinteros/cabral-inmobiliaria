@@ -6,6 +6,7 @@ import { useProperties } from "@/hooks/use-properties";
 import { PropertyCard } from "@/components/properties/property-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PropertyOperation, PropertyType } from "@/types/property";
+import { Loader2Icon } from "lucide-react";
 
 function PropiedadesContent() {
   const searchParams = useSearchParams();
@@ -42,10 +43,13 @@ function PropiedadesContent() {
           </p>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="aspect-4/3 rounded-xl" />
-              ))}
+            // <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            //   {Array.from({ length: 6 }).map((_, i) => (
+            //     <Skeleton key={i} className="aspect-4/3 rounded-xl" />
+            //   ))}
+            // </div>
+            <div className="flex justify-center items-center h-[50vh] pt-32">
+              <Loader2Icon className="size-8 animate-spin" />
             </div>
           ) : isError ? (
             <div className="text-center py-12 text-muted-foreground">
@@ -56,7 +60,7 @@ function PropiedadesContent() {
               No hay propiedades que coincidan con tu búsqueda.
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {properties.map((property) => (
                 <PropertyCard key={property.id} property={property} />
               ))}
