@@ -38,7 +38,7 @@ function PropiedadesContent() {
     location: locationId || undefined,
     min_price: minPrice ?? undefined,
     max_price: maxPrice ?? undefined,
-    limit: 12,
+    limit: 100,
     page: page ?? 1,
   });
 

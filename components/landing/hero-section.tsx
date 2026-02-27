@@ -43,7 +43,7 @@ function HeroShell({ children }: { children: ReactNode }) {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage:
-            "linear-gradient(to bottom, oklch(0.98 0.01 90 / 0.65), oklch(0.98 0.01 90 / 0.9)), url('https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1920&q=80')",
+            "linear-gradient(to bottom, oklch(0.98 0.01 90 / 0.25), oklch(0.98 0.01 90 / 0.7)), url('/hero.jpg')",
         }}
       />
       <div className="relative z-10 w-full max-w-5xl mx-auto text-center">
