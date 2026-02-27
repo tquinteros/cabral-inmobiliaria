@@ -1,3 +1,5 @@
+// types/property.ts
+
 export type PropertyOperation = "sell" | "rent";
 
 export type PropertyType =
@@ -8,16 +10,25 @@ export type PropertyType =
   | "local"
   | "other";
 
+// What you SEND to the API (all optional except internally managed fields)
 export interface PropertySearchParams {
   operation?: PropertyOperation;
-  type?: PropertyType | string; // Tokko type id (number as string) or legacy PropertyType
+  type?: PropertyType | string;
   location?: string;
-  page?: number;
-  limit?: number;
+  page?: number;        // optional — hook sets it via pageParam
+  limit?: number;       // optional — hook sets it via LIMIT constant
   min_price?: number;
   max_price?: number;
   orderBy?: "price" | "room_amount" | "surface";
   order?: "asc" | "desc";
+}
+
+// What you GET BACK from the API (all required — your actions always return these)
+export interface PropertySearchResponse {
+  properties: TokkoProperty[];
+  total: number;        // required
+  page: number;         // required
+  total_pages: number;  // required
 }
 
 export interface TokkoCoverPicture {
@@ -45,21 +56,14 @@ export interface TokkoProperty {
   geo_lat?: string;
   geo_long?: string;
   web_price?: string;
-  price?: number; // numeric price from operations for filtering
+  price?: number;
   available_operations?: string[];
   room_amount?: number;
   bathroom_amount?: number;
   surface?: number;
   roofed_surface?: number;
   description?: string;
-   rich_description?: string; // HTML from Tokko rich_description
+  rich_description?: string;
   cover_picture?: TokkoCoverPicture;
   amenities?: string[];
-}
-
-export interface PropertySearchResponse {
-  properties: TokkoProperty[];
-  total?: number;
-  page?: number;
-  total_pages?: number;
 }

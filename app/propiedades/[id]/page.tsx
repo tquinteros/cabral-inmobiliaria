@@ -9,6 +9,7 @@ import { BedIcon, BathIcon, SquareIcon, ArrowLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PropertyAmenities } from "@/components/properties/property-amenities";
 import { getPropertyById } from "@/lib/actions/properties";
+import { useEffect } from "react";
 
 const PropertyMap = dynamic(
   () =>
@@ -28,6 +29,11 @@ export default function PropertyDetailPage() {
     queryFn: () => getPropertyById(idNum),
     enabled: !!id && !isNaN(idNum),
   });
+
+  useEffect(() => {
+    console.log(property, "property details")
+  }, [property])
+
   if (isLoading || !property) {
     return (
       <main className="min-h-screen py-12 px-4">
@@ -47,7 +53,7 @@ export default function PropertyDetailPage() {
 
   return (
     <main className="min-h-screen">
-        <div className="py-8 px-4">
+      <div className="py-8 px-4">
         <div className="max-w-4xl mx-auto">
           <Button variant="ghost" asChild className="mb-6">
             <Link href="/propiedades" className="gap-2">
@@ -138,7 +144,7 @@ export default function PropertyDetailPage() {
             </Link>
           </Button>
         </div>
-        </div>
-      </main>
+      </div>
+    </main>
   );
 }
