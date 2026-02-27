@@ -43,7 +43,7 @@ export default function PropertyDetailPage() {
   if (isLoading || !property) {
     return (
       <main className="min-h-screen py-12 px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="animate-pulse bg-muted rounded-xl aspect-video mb-8" />
           <div className="h-8 bg-muted rounded w-2/3 mb-4" />
           <div className="h-4 bg-muted rounded w-1/2" />
@@ -64,7 +64,7 @@ export default function PropertyDetailPage() {
   return (
     <main className="min-h-screen">
         <div className="py-8 px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <Button variant="ghost" asChild className="mb-6">
             <Link href="/propiedades" className="gap-2">
               <ArrowLeftIcon className="size-4" />
