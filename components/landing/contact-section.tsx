@@ -1,6 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
+import * as z from 'zod';
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,23 +12,46 @@ import { Label } from "@/components/ui/label";
 import { MailIcon, PhoneIcon, MapPinIcon } from "lucide-react";
 import { toast } from "sonner";
 
+const contactSchema = z.object({
+  name: z
+    .string()
+    .min(1, "El nombre es obligatorio.")
+    .min(2, "El nombre debe tener al menos 2 caracteres."),
+  email: z
+    .string()
+    .min(1, "El email es obligatorio.")
+    .email("Ingresá un email válido."),
+  phone: z
+    .string()
+    .min(8, "El teléfono debe tener al menos 8 caracteres."),
+  message: z
+    .string()
+    .min(1, "El mensaje es obligatorio.")
+    .min(10, "El mensaje debe tener al menos 10 caracteres."),
+});
+
+type ContactFormValues = z.infer<typeof contactSchema>;
+
 export function ContactSection() {
-  const [loading, setLoading] = React.useState(false);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ContactFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(contactSchema as any) as Resolver<ContactFormValues>,
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
+  const onSubmit = async () => {
     try {
       await new Promise((r) => setTimeout(r, 800));
-      toast.success("Mensaje enviado correctamente. Te contactaremos a la brevedad.");
-      form.reset();
+      toast.success(
+        "Mensaje enviado correctamente. Te contactaremos a la brevedad."
+      );
+      reset();
     } catch {
       toast.error("Hubo un error. Intentá de nuevo.");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -83,51 +110,76 @@ export function ContactSection() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4"
+            noValidate
+          >
             <div>
               <Label htmlFor="name">Nombre</Label>
               <Input
                 id="name"
-                name="name"
                 placeholder="Tu nombre"
-                required
                 className="mt-2"
+                aria-invalid={!!errors.name}
+                {...register("name")}
               />
+              {errors.name && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                name="email"
                 type="email"
                 placeholder="tu@email.com"
-                required
                 className="mt-2"
+                aria-invalid={!!errors.email}
+                {...register("email")}
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="phone">Teléfono</Label>
               <Input
                 id="phone"
-                name="phone"
                 type="tel"
                 placeholder="+54 9 11 1234-5678"
                 className="mt-2"
+                aria-invalid={!!errors.phone}
+                {...register("phone")}
               />
+              {errors.phone && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.phone.message}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="message">Mensaje</Label>
               <Textarea
                 id="message"
-                name="message"
                 placeholder="Contanos en qué podemos ayudarte..."
                 rows={4}
-                required
                 className="mt-2"
+                aria-invalid={!!errors.message}
+                {...register("message")}
               />
+              {errors.message && (
+                <p className="mt-1 text-sm text-destructive">
+                  {errors.message.message}
+                </p>
+              )}
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Enviando..." : "Enviar mensaje"}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Enviando..." : "Enviar mensaje"}
             </Button>
           </form>
         </div>
