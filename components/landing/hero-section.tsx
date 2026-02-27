@@ -42,15 +42,14 @@ function HeroShell({ children }: { children: ReactNode }) {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage:
-            "linear-gradient(to bottom, oklch(0.98 0.01 90 / 0.25), oklch(0.98 0.01 90 / 0.7)), url('/hero.jpg')",
+          backgroundImage: "url('/hero.jpg')",
         }}
       />
       <div className="relative z-10 w-full max-w-5xl mx-auto text-center">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-4">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white mb-4">
           Encontrá tu próximo hogar
         </h1>
-        <p className="text-lg sm:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto">
+        <p className="text-lg sm:text-xl text-white/90 mb-12 max-w-2xl mx-auto">
           Casas, departamentos y terrenos en venta y alquiler. Tu propiedad ideal
           está a un clic de distancia.
         </p>
@@ -99,7 +98,7 @@ export function HeroSectionFallback() {
           </Button>
         </div>
 
-        <Button size="lg" className="gap-2" disabled>
+        <Button size="md" className="gap-2" disabled>
           <SearchIcon className="size-4" />
           Buscar
         </Button>

@@ -28,7 +28,6 @@ export function SearchFilters() {
   const { data: propertyTypes = [], isLoading } = usePropertyTypes();
   const { data: barrios = [], isLoading: isLoadingBarrios } = useBarrios();
 
-  // Local-only state in the hero. URL is only updated on search.
   const [operation, setOperation] = React.useState<PropertyOperation>("sell");
   const [type, setType] = React.useState<string>("");
   const [location, setLocation] = React.useState("");
@@ -71,7 +70,7 @@ export function SearchFilters() {
                   ? "Cargando tipos..."
                   : type
                     ? propertyTypes.find((t) => String(t.id) === type)?.name ??
-                      "Tipo de propiedad"
+                    "Tipo de propiedad"
                     : "Tipo de propiedad"}
                 <ChevronDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
               </Button>
@@ -147,7 +146,7 @@ export function SearchFilters() {
                   ? "Cargando ubicaciones..."
                   : location
                     ? barrios.find((b) => String(b.id) === location)?.name ??
-                      "Ubicación"
+                    "Ubicación"
                     : "Ubicación"}
                 <ChevronDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
               </Button>
@@ -209,7 +208,7 @@ export function SearchFilters() {
           </Popover>
         </div>
 
-        <Button onClick={handleSearch} size="lg" className="gap-2">
+        <Button onClick={handleSearch} size="md" className="gap-2">
           <SearchIcon className="size-4" />
           Buscar
         </Button>
