@@ -22,6 +22,7 @@ interface TokkoPhoto {
 }
 
 interface TokkoOperation {
+  operation_id?: number;
   operation_type?: string;
   prices?: Array<{ currency?: string; price?: number }>;
 }
@@ -90,9 +91,9 @@ function mapTokkoToProperty(raw: TokkoRawProperty): TokkoProperty {
     description: raw.description,
     cover_picture: coverPhoto
       ? {
-          url: coverPhoto.image ?? coverPhoto.original,
-          thumb: coverPhoto.thumb ?? coverPhoto.image,
-        }
+        url: coverPhoto.image ?? coverPhoto.original,
+        thumb: coverPhoto.thumb ?? coverPhoto.image,
+      }
       : undefined,
     amenities: amenities.length ? amenities : undefined,
   };
@@ -152,6 +153,15 @@ export async function searchProperties(
   const offset = (page - 1) * limit;
   console.log(filters, "filters");
   try {
+    let operationTypes: number[];
+    if (filters.operation === "sell") {
+      operationTypes = [1];
+    } else if (filters.operation === "rent") {
+      operationTypes = [2];
+    } else {
+      operationTypes = [1, 2];
+    }
+
     const minPrice = filters?.min_price;
     const maxPrice = filters?.max_price;
 
@@ -187,7 +197,7 @@ export async function searchProperties(
     const searchData: Record<string, unknown> = {
       price_from,
       price_to,
-      operation_types: [1, 2, 3],
+      operation_types: operationTypes,
       property_types,
       limit,
       offset,

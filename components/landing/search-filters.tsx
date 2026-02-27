@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { CheckIcon, ChevronDownIcon, SearchIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -11,21 +13,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { SearchIcon } from "lucide-react";
-import { LocationCombobox } from "./location-combobox";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { usePropertyTypes } from "@/hooks/use-property-types";
+import { useBarrios } from "@/hooks/use-barrios";
 import type { PropertyOperation } from "@/types/property";
 
 export function SearchFilters() {
   const router = useRouter();
   const { data: propertyTypes = [], isLoading } = usePropertyTypes();
+  const { data: barrios = [], isLoading: isLoadingBarrios } = useBarrios();
+
+  // Local-only state in the hero. URL is only updated on search.
   const [operation, setOperation] = React.useState<PropertyOperation>("sell");
   const [type, setType] = React.useState<string>("");
   const [location, setLocation] = React.useState("");
+  const [locationOpen, setLocationOpen] = React.useState(false);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
-    params.set("operation", operation);
+    if (operation) params.set("operation", operation);
     if (type) params.set("type", type);
     if (location) params.set("location", location);
     router.push(`/propiedades?${params.toString()}`);
@@ -65,11 +83,79 @@ export function SearchFilters() {
         </div>
 
         <div className="flex-1 min-w-[200px]">
-          <LocationCombobox
-            value={location}
-            onValueChange={setLocation}
-            placeholder="Ubicación"
-          />
+          <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={locationOpen}
+                disabled={isLoadingBarrios}
+                className="w-full justify-between font-normal h-9 px-3 py-2"
+              >
+                {isLoadingBarrios
+                  ? "Cargando ubicaciones..."
+                  : location
+                    ? barrios.find((b) => String(b.id) === location)?.name ??
+                      "Ubicación"
+                    : "Ubicación"}
+                <ChevronDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-(--radix-popover-trigger-width) p-0"
+              align="start"
+            >
+              <Command
+                filter={(value, search) => {
+                  const q = search.trim().toLowerCase();
+                  if (!q) return 1;
+                  return value.toLowerCase().includes(q) ? 1 : 0;
+                }}
+              >
+                <CommandInput placeholder="Buscar barrio..." />
+                <CommandList className="max-h-[240px]">
+                  <CommandEmpty>No se encontró el barrio.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="__all__"
+                      onSelect={() => {
+                        setLocation("");
+                        setLocationOpen(false);
+                      }}
+                    >
+                      <CheckIcon
+                        className={cn(
+                          "mr-2 size-4",
+                          !location ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      Todos los barrios
+                    </CommandItem>
+                    {barrios.map((division) => (
+                      <CommandItem
+                        key={division.id}
+                        value={division.name}
+                        onSelect={() => {
+                          setLocation(String(division.id));
+                          setLocationOpen(false);
+                        }}
+                      >
+                        <CheckIcon
+                          className={cn(
+                            "mr-2 size-4",
+                            location === String(division.id)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {division.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <Button onClick={handleSearch} size="lg" className="gap-2">

@@ -5,11 +5,10 @@ import { useQueryState, parseAsString, parseAsInteger } from "nuqs";
 import { useProperties } from "@/hooks/use-properties";
 import { useBarrios } from "@/hooks/use-barrios";
 import { usePropertyTypes } from "@/hooks/use-property-types";
-import { PropertyCard } from "@/components/properties/property-card";
+import { PropertyCard, PropertyCardSkeleton } from "@/components/properties/property-card";
 import { PropertyFiltersSidebar } from "@/components/properties/property-filters-sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PropertyOperation, PropertyType } from "@/types/property";
-import { Loader2Icon } from "lucide-react";
 
 function PropiedadesContent() {
   const [operation] = useQueryState(
@@ -70,9 +69,16 @@ function PropiedadesContent() {
               </p>
 
               {isLoading ? (
-                <div className="flex justify-center items-center h-[50vh] pt-32">
-                  <Loader2Icon className="size-8 animate-spin" />
-                </div>
+                <>
+                  <div className="text-sm text-muted-foreground mb-4">
+                    Cargando propiedades...
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {Array.from({ length: 6 }).map((_, index) => (
+                      <PropertyCardSkeleton key={index} />
+                    ))}
+                  </div>
+                </>
               ) : isError ? (
                 <div className="text-center py-12 text-muted-foreground">
                   No pudimos cargar las propiedades. Intentá de nuevo más tarde.
