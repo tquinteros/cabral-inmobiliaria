@@ -6,10 +6,13 @@ import type {
   PropertySearchResponse,
   TokkoProperty,
 } from "@/types/property";
+import { getPropertyTypes } from "@/lib/actions/property-types";
 
 const TOKKO_BASE_URL =
   process.env.TOKKO_BASE_URL || "https://www.tokkobroker.com/api";
 const TOKKO_API_KEY = process.env.TOKKO_API_KEY;
+
+const MAX_PRICE = 999999999999;
 
 interface TokkoPhoto {
   image?: string;
@@ -48,6 +51,7 @@ function mapTokkoToProperty(raw: TokkoRawProperty): TokkoProperty {
     raw.photos?.find((p) => p.is_front_cover) ?? raw.photos?.[0];
   const operation = raw.operations?.[0];
   const price = operation?.prices?.[0];
+  const priceNum = price ? Number(price.price) : undefined;
   const priceStr =
     raw.web_price && price
       ? `${price.currency ?? "USD"} ${Number(price.price).toLocaleString()}`
@@ -65,7 +69,6 @@ function mapTokkoToProperty(raw: TokkoRawProperty): TokkoProperty {
   const amenities = (raw.custom_tags ?? [])
     .map((t) => t.public_name ?? t.name ?? "")
     .filter(Boolean);
-
   return {
     id: raw.id,
     reference_code: raw.reference_code,
@@ -77,6 +80,7 @@ function mapTokkoToProperty(raw: TokkoRawProperty): TokkoProperty {
     geo_lat: raw.geo_lat,
     geo_long: raw.geo_long,
     web_price: priceStr,
+    price: priceNum,
     available_operations:
       availableOperations.length ? availableOperations : ["sell"],
     room_amount: raw.room_amount,
@@ -109,14 +113,103 @@ export async function getProperties(
       limit,
       offset,
     };
-    if (filters?.type) params.type = filters.type;
-    if (filters?.operation) params.operation = filters.operation;
-    if (filters?.location) params.location = filters.location;
 
     const { data } = await axios.get(`${TOKKO_BASE_URL}/v1/property/`, {
       params,
-      timeout: 10000,
+      timeout: 30000,
     });
+
+    const objects = (data as { objects?: TokkoRawProperty[] })?.objects ?? [];
+    const meta = (data as { meta?: { total_count?: number } })?.meta;
+    const totalCount = meta?.total_count ?? objects.length;
+
+    const properties = objects
+      .filter((p) => p && typeof p.id !== "undefined")
+      .map(mapTokkoToProperty);
+
+    return {
+      properties,
+      total: totalCount,
+      page,
+      total_pages: Math.ceil(totalCount / limit) || 1,
+    };
+  } catch (error) {
+    console.error("Tokko API error:", error);
+    return {
+      properties: [],
+      total: 0,
+      page: 1,
+      total_pages: 0,
+    };
+  }
+}
+
+export async function searchProperties(
+  filters: PropertySearchParams
+): Promise<PropertySearchResponse> {
+  const page = filters?.page ?? 1;
+  const limit = filters?.limit ?? 12;
+  const offset = (page - 1) * limit;
+
+  try {
+    const minPrice = filters?.min_price;
+    const maxPrice = filters?.max_price;
+
+    let price_from: number;
+    let price_to: number;
+    if (minPrice != null && maxPrice != null) {
+      price_from = minPrice;
+      price_to = maxPrice;
+    } else if (minPrice != null) {
+      price_from = minPrice;
+      price_to = MAX_PRICE;
+    } else if (maxPrice != null) {
+      price_from = 0;
+      price_to = maxPrice;
+    } else {
+      price_from = 0;
+      price_to = MAX_PRICE;
+    }
+
+    const propertyTypes = await getPropertyTypes();
+    const allTypeIds = propertyTypes.map((t) => t.id);
+    const typeId = filters?.type ? parseInt(String(filters.type), 10) : NaN;
+    const property_types = !isNaN(typeId)
+      ? [typeId]
+      : allTypeIds.length > 0
+        ? allTypeIds
+        : [1, 2, 3, 4, 5, 6, 7];
+
+    const locationId = filters?.location
+      ? parseInt(String(filters.location), 10)
+      : NaN;
+
+    const searchData: Record<string, unknown> = {
+      price_from,
+      price_to,
+      operation_types: [1, 2, 3],
+      property_types,
+      limit,
+      offset,
+    };
+
+    if (!isNaN(locationId)) {
+      searchData.current_localization_id = [locationId];
+      searchData.current_localization_type = "division";
+    }
+
+    const { data } = await axios.get(
+      `${TOKKO_BASE_URL}/v1/property/search`,
+      {
+        params: {
+          data: JSON.stringify(searchData),
+          key: TOKKO_API_KEY ?? "",
+          format: "json",
+          lang: "es_ar",
+        },
+        timeout: 30000,
+      }
+    );
 
     const objects = (data as { objects?: TokkoRawProperty[] })?.objects ?? [];
     const meta = (data as { meta?: { total_count?: number } })?.meta;
@@ -156,7 +249,7 @@ export async function getPropertyById(
         format: "json",
         lang: "es_ar",
       },
-      timeout: 10000,
+      timeout: 30000,
     });
 
     const raw = data as TokkoRawProperty;

@@ -14,6 +14,8 @@ export interface PropertySearchParams {
   location?: string;
   page?: number;
   limit?: number;
+  min_price?: number;
+  max_price?: number;
   orderBy?: "price" | "room_amount" | "surface";
   order?: "asc" | "desc";
 }
@@ -43,6 +45,7 @@ export interface TokkoProperty {
   geo_lat?: string;
   geo_long?: string;
   web_price?: string;
+  price?: number; // numeric price from operations for filtering
   available_operations?: string[];
   room_amount?: number;
   bathroom_amount?: number;
