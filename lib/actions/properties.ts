@@ -1,0 +1,162 @@
+"use server";
+
+import axios from "axios";
+import type {
+  PropertySearchParams,
+  PropertySearchResponse,
+  TokkoProperty,
+} from "@/types/property";
+
+const TOKKO_BASE_URL =
+  process.env.TOKKO_BASE_URL || "https://www.tokkobroker.com/api";
+const TOKKO_API_KEY = process.env.TOKKO_API_KEY;
+
+interface TokkoPhoto {
+  image?: string;
+  thumb?: string;
+  original?: string;
+  is_front_cover?: boolean;
+}
+
+interface TokkoOperation {
+  operation_type?: string;
+  prices?: Array<{ currency?: string; price?: number }>;
+}
+
+interface TokkoRawProperty {
+  id: number;
+  reference_code?: string;
+  type?: { name?: string };
+  location?: { short_location?: string };
+  publication_title?: string;
+  photos?: TokkoPhoto[];
+  web_price?: boolean;
+  operations?: TokkoOperation[];
+  room_amount?: number;
+  bathroom_amount?: number;
+  surface?: string;
+  roofed_surface?: string;
+  total_surface?: string;
+  description?: string;
+  custom_tags?: Array<{ public_name?: string; name?: string }>;
+}
+
+function mapTokkoToProperty(raw: TokkoRawProperty): TokkoProperty {
+  const coverPhoto =
+    raw.photos?.find((p) => p.is_front_cover) ?? raw.photos?.[0];
+  const operation = raw.operations?.[0];
+  const price = operation?.prices?.[0];
+  const priceStr =
+    raw.web_price && price
+      ? `${price.currency ?? "USD"} ${Number(price.price).toLocaleString()}`
+      : "Consultar precio";
+
+  const availableOperations = (raw.operations ?? []).map((op) =>
+    op.operation_type?.toLowerCase().includes("rent") ? "rent" : "sell"
+  );
+
+  const surfaceNum = parseFloat(
+    raw.total_surface ?? raw.roofed_surface ?? raw.surface ?? "0"
+  );
+  const roofedNum = parseFloat(raw.roofed_surface ?? "0");
+
+  const amenities = (raw.custom_tags ?? [])
+    .map((t) => t.public_name ?? t.name ?? "")
+    .filter(Boolean);
+
+  return {
+    id: raw.id,
+    reference_code: raw.reference_code,
+    publication_title: raw.publication_title,
+    type: raw.type ? { name: raw.type.name } : undefined,
+    location: raw.location
+      ? { short_location: raw.location.short_location }
+      : undefined,
+    web_price: priceStr,
+    available_operations:
+      availableOperations.length ? availableOperations : ["sell"],
+    room_amount: raw.room_amount,
+    bathroom_amount: raw.bathroom_amount,
+    surface: surfaceNum || undefined,
+    roofed_surface: roofedNum || undefined,
+    description: raw.description,
+    cover_picture: coverPhoto
+      ? {
+          url: coverPhoto.image ?? coverPhoto.original,
+          thumb: coverPhoto.thumb ?? coverPhoto.image,
+        }
+      : undefined,
+    amenities: amenities.length ? amenities : undefined,
+  };
+}
+
+export async function getProperties(
+  filters?: PropertySearchParams
+): Promise<PropertySearchResponse> {
+  const page = filters?.page ?? 1;
+  const limit = filters?.limit ?? 12;
+  const offset = (page - 1) * limit;
+
+  try {
+    const { data } = await axios.get(`${TOKKO_BASE_URL}/v1/property/`, {
+      params: {
+        key: TOKKO_API_KEY,
+        format: "json",
+        lang: "es_ar",
+        limit,
+        offset,
+      },
+      timeout: 10000,
+    });
+
+    const objects = (data as { objects?: TokkoRawProperty[] })?.objects ?? [];
+    const meta = (data as { meta?: { total_count?: number } })?.meta;
+    const totalCount = meta?.total_count ?? objects.length;
+
+    const properties = objects
+      .filter((p) => p && typeof p.id !== "undefined")
+      .map(mapTokkoToProperty);
+
+    return {
+      properties,
+      total: totalCount,
+      page,
+      total_pages: Math.ceil(totalCount / limit) || 1,
+    };
+  } catch (error) {
+    console.error("Tokko API error:", error);
+    return {
+      properties: [],
+      total: 0,
+      page: 1,
+      total_pages: 0,
+    };
+  }
+}
+
+export async function getPropertyById(
+  id: number
+): Promise<TokkoProperty | null> {
+  const idNum = parseInt(String(id), 10);
+  if (isNaN(idNum)) return null;
+
+  try {
+    const { data } = await axios.get(`${TOKKO_BASE_URL}/v1/property/${idNum}/`, {
+      params: {
+        key: TOKKO_API_KEY,
+        format: "json",
+        lang: "es_ar",
+      },
+      timeout: 10000,
+    });
+
+    const raw = data as TokkoRawProperty;
+    if (raw && typeof raw.id !== "undefined") {
+      return mapTokkoToProperty(raw);
+    }
+  } catch (error) {
+    console.error("Tokko API error:", error);
+  }
+
+  return null;
+}
