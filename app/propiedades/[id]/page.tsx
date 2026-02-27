@@ -1,12 +1,21 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { BedIcon, BathIcon, SquareIcon, ArrowLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  CarouselApi,
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { PropertyAmenities } from "@/components/properties/property-amenities";
 import { getPropertyById } from "@/lib/actions/properties";
 
@@ -22,12 +31,16 @@ export default function PropertyDetailPage() {
   const params = useParams();
   const id = params.id as string;
   const idNum = parseInt(id, 10);
+  const [mainCarouselApi, setMainCarouselApi] = useState<CarouselApi | null>(null);
 
   const { data: property, isLoading } = useQuery({
     queryKey: ["property", id],
     queryFn: () => getPropertyById(idNum),
     enabled: !!id && !isNaN(idNum),
   });
+
+  console.log(property,"property details")
+
   if (isLoading || !property) {
     return (
       <main className="min-h-screen py-12 px-4">
@@ -45,6 +58,10 @@ export default function PropertyDetailPage() {
     property.cover_picture?.thumb ??
     "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&q=80";
 
+  const photos = property.photos && property.photos.length > 0
+    ? property.photos
+    : undefined;
+
   return (
     <main className="min-h-screen">
         <div className="py-8 px-4">
@@ -56,16 +73,86 @@ export default function PropertyDetailPage() {
             </Link>
           </Button>
 
-          <div className="relative aspect-video rounded-xl overflow-hidden bg-muted mb-8">
-            <Image
-              src={imageUrl}
-              alt={property.type?.name ?? "Propiedad"}
-              fill
-              className="object-cover"
-              sizes="(max-width: 896px) 100vw, 896px"
-              priority
-            />
-          </div>
+          {photos ? (
+            <div className="mb-8 space-y-4">
+              <Carousel className="w-full" setApi={setMainCarouselApi}>
+                <CarouselContent className="ml-0">
+                  {photos.map((photo, index) => {
+                    const src =
+                      photo.image ??
+                      photo.original ??
+                      photo.thumb ??
+                      imageUrl;
+
+                    return (
+                      <CarouselItem key={index} className="pl-0">
+                        <div className="relative aspect-video rounded-xl overflow-hidden bg-muted">
+                          <Image
+                            src={src}
+                            alt={property.type?.name ?? "Propiedad"}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 896px) 100vw, 896px"
+                            priority={index === 0}
+                          />
+                        </div>
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+                <CarouselPrevious className="hidden sm:flex -left-4 sm:-left-8" />
+                <CarouselNext className="hidden sm:flex -right-4 sm:-right-8" />
+              </Carousel>
+
+              {/* Thumbnails carousel */}
+              <Carousel
+                className="w-full"
+                opts={{ align: "start", slidesToScroll: 3 }}
+              >
+                <CarouselContent className="-ml-2">
+                  {photos.map((photo, index) => {
+                    const thumbSrc =
+                      photo.thumb ??
+                      photo.image ??
+                      photo.original ??
+                      imageUrl;
+
+                    return (
+                      <CarouselItem
+                        key={index}
+                        className="pl-2 basis-1/4 sm:basis-1/6 lg:basis-1/8"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => mainCarouselApi?.scrollTo(index)}
+                          className="relative w-full pb-[70%] rounded-lg overflow-hidden border border-transparent hover:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                          <Image
+                            src={thumbSrc}
+                            alt={property.type?.name ?? "Propiedad"}
+                            fill
+                            className="object-cover"
+                            sizes="120px"
+                          />
+                        </button>
+                      </CarouselItem>
+                    );
+                  })}
+                </CarouselContent>
+              </Carousel>
+            </div>
+          ) : (
+            <div className="relative aspect-video rounded-xl overflow-hidden bg-muted mb-8">
+              <Image
+                src={imageUrl}
+                alt={property.type?.name ?? "Propiedad"}
+                fill
+                className="object-cover"
+                sizes="(max-width: 896px) 100vw, 896px"
+                priority
+              />
+            </div>
+          )}
 
           <h1 className="text-3xl font-bold tracking-tight mb-2">
             {property.type?.name ?? "Propiedad"} en{" "}

@@ -5,6 +5,7 @@ import type {
   PropertySearchParams,
   PropertySearchResponse,
   TokkoProperty,
+  TokkoPhoto as TokkoMappedPhoto,
 } from "@/types/property";
 import { getPropertyTypes } from "@/lib/actions/property-types";
 
@@ -70,6 +71,16 @@ function mapTokkoToProperty(raw: TokkoRawProperty): TokkoProperty {
   const amenities = (raw.custom_tags ?? [])
     .map((t) => t.public_name ?? t.name ?? "")
     .filter(Boolean);
+
+  const photos: TokkoMappedPhoto[] | undefined = raw.photos
+    ? raw.photos.map((photo) => ({
+      image: photo.image ?? photo.original ?? photo.thumb,
+      thumb: photo.thumb ?? photo.image ?? photo.original,
+      original: photo.original ?? photo.image ?? photo.thumb,
+      is_front_cover: photo.is_front_cover,
+    }))
+    : undefined;
+
   return {
     id: raw.id,
     reference_code: raw.reference_code,
@@ -90,6 +101,7 @@ function mapTokkoToProperty(raw: TokkoRawProperty): TokkoProperty {
     roofed_surface: roofedNum || undefined,
     description: raw.description,
     rich_description: raw.rich_description,
+    photos,
     cover_picture: coverPhoto
       ? {
         url: coverPhoto.image ?? coverPhoto.original,
@@ -262,7 +274,7 @@ export async function getPropertyById(
       },
       timeout: 30000,
     });
-    console.log(data.rich_description,"asdasd")
+    console.log(data,"asdasd")
     const raw = data as TokkoRawProperty;
     if (raw && typeof raw.id !== "undefined") {
       return mapTokkoToProperty(raw);

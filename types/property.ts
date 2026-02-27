@@ -25,6 +25,13 @@ export interface TokkoCoverPicture {
   url?: string;
 }
 
+export interface TokkoPhoto {
+  image?: string;
+  thumb?: string;
+  original?: string;
+  is_front_cover?: boolean;
+}
+
 export interface TokkoPropertyType {
   id?: number;
   name?: string;
@@ -52,9 +59,10 @@ export interface TokkoProperty {
   surface?: number;
   roofed_surface?: number;
   description?: string;
-   rich_description?: string; // HTML from Tokko rich_description
+  rich_description?: string; // HTML from Tokko rich_description
   cover_picture?: TokkoCoverPicture;
   amenities?: string[];
+  photos?: TokkoPhoto[];
 }
 
 export interface PropertySearchResponse {
