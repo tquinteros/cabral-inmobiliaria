@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useQueryState, parseAsString, parseAsInteger } from "nuqs";
 import { useProperties } from "@/hooks/use-properties";
 import { useBarrios } from "@/hooks/use-barrios";
 import { usePropertyTypes } from "@/hooks/use-property-types";
@@ -12,14 +12,15 @@ import type { PropertyOperation, PropertyType } from "@/types/property";
 import { Loader2Icon } from "lucide-react";
 
 function PropiedadesContent() {
-  const searchParams = useSearchParams();
-  const operation = searchParams.get("operation") as PropertyOperation | null;
-  const type = searchParams.get("type") as PropertyType | null;
-  const locationId = searchParams.get("location");
-  const minPriceParam = searchParams.get("min_price");
-  const maxPriceParam = searchParams.get("max_price");
-  const minPrice = minPriceParam ? parseInt(minPriceParam, 10) : undefined;
-  const maxPrice = maxPriceParam ? parseInt(maxPriceParam, 10) : undefined;
+  const [operation] = useQueryState(
+    "operation",
+    parseAsString.withDefault("")
+  );
+  const [type] = useQueryState("type", parseAsString.withDefault(""));
+  const [locationId] = useQueryState("location", parseAsString.withDefault(""));
+  const [minPrice] = useQueryState("min_price", parseAsInteger);
+  const [maxPrice] = useQueryState("max_price", parseAsInteger);
+  const [page] = useQueryState("page", parseAsInteger.withDefault(1));
 
   const { data: barrios = [] } = useBarrios();
   const { data: propertyTypes = [] } = usePropertyTypes();
@@ -33,13 +34,13 @@ function PropiedadesContent() {
   );
 
   const { data, isLoading, isError } = useProperties({
-    operation: operation ?? undefined,
-    type: type ?? undefined,
-    location: locationId ?? undefined,
-    min_price: minPrice,
-    max_price: maxPrice,
+    operation: (operation as PropertyOperation) || undefined,
+    type: (type as PropertyType) || undefined,
+    location: locationId || undefined,
+    min_price: minPrice ?? undefined,
+    max_price: maxPrice ?? undefined,
     limit: 12,
-    page: parseInt(searchParams.get("page") || "1", 10),
+    page: page ?? 1,
   });
 
   const properties = data?.properties ?? [];

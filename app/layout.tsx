@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "./providers";
 import { Header } from "@/components/landing/header";
 import ScrollToTop from "@/components/scroll-to-top";
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -31,12 +33,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          <Header />
-          {children}
-          <ScrollToTop />
-          <Toaster />
-        </Providers>
+        <NuqsAdapter>
+          <Providers>
+            <Header />
+            {children}
+            <ScrollToTop />
+            <Toaster />
+          </Providers>
+        </NuqsAdapter>
       </body>
     </html>
   );

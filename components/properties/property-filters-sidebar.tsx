@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useQueryState, parseAsString, parseAsInteger } from "nuqs";
 import { CheckIcon, ChevronDownIcon, SlidersHorizontalIcon } from "lucide-react";
 import {
   Select,
@@ -29,23 +29,26 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePropertyTypes } from "@/hooks/use-property-types";
 import { useBarrios } from "@/hooks/use-barrios";
-import type { PropertyOperation } from "@/types/property";
 
-function PriceFilterSection({
-  searchParams,
-  onApply,
-}: {
-  searchParams: URLSearchParams;
-  onApply: (min: string, max: string) => void;
-}) {
-  const [minPrice, setMinPrice] = useState(
-    () => searchParams.get("min_price") ?? ""
+function PriceFilterSection() {
+  const [minPrice, setMinPrice] = useQueryState("min_price", parseAsInteger);
+  const [maxPrice, setMaxPrice] = useQueryState("max_price", parseAsInteger);
+  
+  // Use URL params as initial values, key forces reset when URL changes
+  const [minPriceInput, setMinPriceInput] = useState(
+    () => minPrice?.toString() ?? ""
   );
-  const [maxPrice, setMaxPrice] = useState(
-    () => searchParams.get("max_price") ?? ""
+  const [maxPriceInput, setMaxPriceInput] = useState(
+    () => maxPrice?.toString() ?? ""
   );
 
-  const handleApply = () => onApply(minPrice, maxPrice);
+  const handleApply = () => {
+    const min = minPriceInput.trim() ? parseInt(minPriceInput, 10) : null;
+    const max = maxPriceInput.trim() ? parseInt(maxPriceInput, 10) : null;
+    setMinPrice(min && min > 0 ? min : null);
+    setMaxPrice(max && max > 0 ? max : null);
+  };
+  
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleApply();
   };
@@ -57,8 +60,8 @@ function PriceFilterSection({
           type="number"
           inputMode="numeric"
           placeholder="Mín"
-          value={minPrice}
-          onChange={(e) => setMinPrice(e.target.value)}
+          value={minPriceInput}
+          onChange={(e) => setMinPriceInput(e.target.value)}
           onKeyDown={handleKeyDown}
           min={0}
           className="flex-1"
@@ -67,8 +70,8 @@ function PriceFilterSection({
           type="number"
           inputMode="numeric"
           placeholder="Máx"
-          value={maxPrice}
-          onChange={(e) => setMaxPrice(e.target.value)}
+          value={maxPriceInput}
+          onChange={(e) => setMaxPriceInput(e.target.value)}
           onKeyDown={handleKeyDown}
           min={0}
           className="flex-1"
@@ -87,63 +90,53 @@ function PriceFilterSection({
 }
 
 export function PropertyFiltersSidebar() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const { data: propertyTypes = [], isLoading: isLoadingTypes } = usePropertyTypes();
   const { data: barrios = [], isLoading: isLoadingBarrios } = useBarrios();
 
   const [typesOpen, setTypesOpen] = useState(false);
   const [barriosOpen, setBarriosOpen] = useState(false);
 
-  const operation = (searchParams.get("operation") as PropertyOperation) ?? "";
-  const location = searchParams.get("location") ?? "";
-  const type = searchParams.get("type") ?? "";
-
+  const [operation, setOperation] = useQueryState(
+    "operation",
+    parseAsString.withDefault("")
+  );
+  const [location, setLocation] = useQueryState(
+    "location",
+    parseAsString.withDefault("")
+  );
+  const [type, setType] = useQueryState(
+    "type",
+    parseAsString.withDefault("")
+  );
+  const [minPrice, setMinPrice] = useQueryState("min_price", parseAsInteger);
+  const [maxPrice, setMaxPrice] = useQueryState("max_price", parseAsInteger);
 
   const handleOperationChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) params.set("operation", value);
-    else params.delete("operation");
-    params.delete("page");
-    router.push(`/propiedades?${params.toString()}`);
+    setOperation(value || null);
   };
 
   const handleLocationChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) params.set("location", value);
-    else params.delete("location");
-    params.delete("page");
-    router.push(`/propiedades?${params.toString()}`);
+    setLocation(value || null);
   };
 
   const handleTypeChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) params.set("type", value);
-    else params.delete("type");
-    params.delete("page");
-    router.push(`/propiedades?${params.toString()}`);
+    setType(value || null);
   };
 
-  const applyPriceFilter = (minPrice: string, maxPrice: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    const min = minPrice.trim() ? parseInt(minPrice, 10) : NaN;
-    const max = maxPrice.trim() ? parseInt(maxPrice, 10) : NaN;
-    if (!isNaN(min) && min > 0) params.set("min_price", String(min));
-    else params.delete("min_price");
-    if (!isNaN(max) && max > 0) params.set("max_price", String(max));
-    else params.delete("max_price");
-    params.delete("page");
-    router.push(`/propiedades?${params.toString()}`);
+  const clearFilters = () => {
+    setOperation(null);
+    setLocation(null);
+    setType(null);
+    setMinPrice(null);
+    setMaxPrice(null);
   };
-
-  const clearFilters = () => router.push("/propiedades");
 
   const hasActiveFilters =
     operation ||
     location ||
     type ||
-    (searchParams.get("min_price") ?? "").trim() ||
-    (searchParams.get("max_price") ?? "").trim();
+    minPrice !== null ||
+    maxPrice !== null;
 
   return (
     <aside className="w-full lg:w-72 shrink-0">
@@ -337,11 +330,7 @@ export function PropertyFiltersSidebar() {
             <Label className="text-xs font-medium uppercase text-muted-foreground">
               Rango de precio
             </Label>
-            <PriceFilterSection
-              key={searchParams.toString()}
-              searchParams={searchParams}
-              onApply={applyPriceFilter}
-            />
+            <PriceFilterSection key={`${minPrice ?? ""}-${maxPrice ?? ""}`} />
           </div>
 
           {hasActiveFilters && (

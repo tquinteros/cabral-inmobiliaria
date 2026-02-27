@@ -150,7 +150,7 @@ export async function searchProperties(
   const page = filters?.page ?? 1;
   const limit = filters?.limit ?? 12;
   const offset = (page - 1) * limit;
-
+  console.log(filters, "filters");
   try {
     const minPrice = filters?.min_price;
     const maxPrice = filters?.max_price;
