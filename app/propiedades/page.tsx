@@ -26,7 +26,7 @@ function PropiedadesContent() {
   return (
     <main className="min-h-screen">
       <div className="py-12 px-4">
-        <div className="max-w-6xl mx-auto">
+        <div className="container mx-auto">
           <h1 className="text-3xl font-bold tracking-tight mb-2">
             Propiedades
           </h1>
@@ -73,7 +73,7 @@ export default function PropiedadesPage() {
     <Suspense
       fallback={
         <main className="min-h-screen py-12 px-4">
-          <div className="max-w-6xl mx-auto">
+          <div className="container mx-auto">
             <div className="flex gap-4">
               <Skeleton className="h-10 w-48" />
               <Skeleton className="h-10 w-48" />

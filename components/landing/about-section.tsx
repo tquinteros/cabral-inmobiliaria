@@ -5,7 +5,7 @@ import Image from "next/image";
 export function AboutSection() {
   return (
     <section className="py-16 px-4 bg-muted/50">
-      <div className="max-w-6xl mx-auto">
+      <div className="container mx-auto">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-muted">
             <Image

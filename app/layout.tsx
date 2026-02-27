@@ -4,7 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { Providers } from "./providers";
 import { Header } from "@/components/landing/header";
-
+import ScrollToTop from "@/components/scroll-to-top";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -34,6 +34,7 @@ export default function RootLayout({
         <Providers>
           <Header />
           {children}
+          <ScrollToTop />
           <Toaster />
         </Providers>
       </body>
