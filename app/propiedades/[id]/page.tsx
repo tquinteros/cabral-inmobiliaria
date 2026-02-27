@@ -39,7 +39,6 @@ export default function PropertyDetailPage() {
     enabled: !!id && !isNaN(idNum),
   });
 
-  console.log(property,"property details")
 
   if (isLoading || !property) {
     return (

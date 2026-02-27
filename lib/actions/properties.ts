@@ -164,7 +164,6 @@ export async function searchProperties(
   const page = filters?.page ?? 1;
   const limit = filters?.limit ?? 12;
   const offset = (page - 1) * limit;
-  console.log(filters, "filters");
   try {
     let operationTypes: number[];
     if (filters.operation === "sell") {
@@ -274,7 +273,6 @@ export async function getPropertyById(
       },
       timeout: 30000,
     });
-    console.log(data,"asdasd")
     const raw = data as TokkoRawProperty;
     if (raw && typeof raw.id !== "undefined") {
       return mapTokkoToProperty(raw);
