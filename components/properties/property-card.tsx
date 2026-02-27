@@ -133,7 +133,7 @@ export function PropertyCardSkeleton({ className }: { className?: string }) {
       </CardContent>
       <CardFooter className="mt-auto shrink-0 p-4 pt-0">
         <Button variant="outline" className="w-full" disabled>
-          <Skeleton className="h-4 w-20 mx-auto" />
+          Ver Más
         </Button>
       </CardFooter>
     </Card>

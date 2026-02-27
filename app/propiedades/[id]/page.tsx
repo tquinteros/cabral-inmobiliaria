@@ -28,7 +28,6 @@ export default function PropertyDetailPage() {
     queryFn: () => getPropertyById(idNum),
     enabled: !!id && !isNaN(idNum),
   });
-
   if (isLoading || !property) {
     return (
       <main className="min-h-screen py-12 px-4">
@@ -106,12 +105,19 @@ export default function PropertyDetailPage() {
             {property.web_price ?? "Consultar precio"}
           </p>
 
-          {property.description && (
+          {(property.rich_description || property.description) && (
             <div className="prose prose-neutral max-w-none">
               <h2 className="text-xl font-semibold mb-2">Descripción</h2>
-              <p className="text-muted-foreground whitespace-pre-wrap">
-                {property.description}
-              </p>
+              {property.rich_description ? (
+                <div
+                  className="text-muted-foreground prose-sm sm:prose-base"
+                  dangerouslySetInnerHTML={{ __html: property.rich_description }}
+                />
+              ) : (
+                <p className="text-muted-foreground whitespace-pre-wrap">
+                  {property.description}
+                </p>
+              )}
             </div>
           )}
 

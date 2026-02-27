@@ -44,6 +44,7 @@ interface TokkoRawProperty {
   roofed_surface?: string;
   total_surface?: string;
   description?: string;
+  rich_description?: string;
   custom_tags?: Array<{ public_name?: string; name?: string }>;
 }
 
@@ -66,7 +67,6 @@ function mapTokkoToProperty(raw: TokkoRawProperty): TokkoProperty {
     raw.total_surface ?? raw.roofed_surface ?? raw.surface ?? "0"
   );
   const roofedNum = parseFloat(raw.roofed_surface ?? "0");
-
   const amenities = (raw.custom_tags ?? [])
     .map((t) => t.public_name ?? t.name ?? "")
     .filter(Boolean);
@@ -89,6 +89,7 @@ function mapTokkoToProperty(raw: TokkoRawProperty): TokkoProperty {
     surface: surfaceNum || undefined,
     roofed_surface: roofedNum || undefined,
     description: raw.description,
+    rich_description: raw.rich_description,
     cover_picture: coverPhoto
       ? {
         url: coverPhoto.image ?? coverPhoto.original,
@@ -261,7 +262,7 @@ export async function getPropertyById(
       },
       timeout: 30000,
     });
-
+    console.log(data.rich_description,"asdasd")
     const raw = data as TokkoRawProperty;
     if (raw && typeof raw.id !== "undefined") {
       return mapTokkoToProperty(raw);

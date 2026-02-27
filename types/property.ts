@@ -52,6 +52,7 @@ export interface TokkoProperty {
   surface?: number;
   roofed_surface?: number;
   description?: string;
+   rich_description?: string; // HTML from Tokko rich_description
   cover_picture?: TokkoCoverPicture;
   amenities?: string[];
 }
