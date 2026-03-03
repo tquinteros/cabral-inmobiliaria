@@ -273,6 +273,8 @@ export async function getPropertyById(
       },
       timeout: 30000,
     });
+    console.log(data,"data")
+    console.log(data.operations[0],"operation price")
     const raw = data as TokkoRawProperty;
     if (raw && typeof raw.id !== "undefined") {
       return mapTokkoToProperty(raw);

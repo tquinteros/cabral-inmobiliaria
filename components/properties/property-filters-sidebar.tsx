@@ -158,7 +158,7 @@ export function PropertyFiltersSidebar() {
                 handleOperationChange(v === "all" ? "" : v)
               }
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full cursor-pointer hover:bg-secondary transition-all">
                 <SelectValue placeholder="Todas" />
               </SelectTrigger>
               <SelectContent>
@@ -175,7 +175,7 @@ export function PropertyFiltersSidebar() {
               Tipo de propiedad
             </Label>
             <Popover open={typesOpen} onOpenChange={setTypesOpen}>
-              <PopoverTrigger asChild>
+              <PopoverTrigger className="bg-transparent" asChild>
                 <Button
                   variant="outline"
                   role="combobox"
@@ -252,7 +252,7 @@ export function PropertyFiltersSidebar() {
               Barrio
             </Label>
             <Popover open={barriosOpen} onOpenChange={setBarriosOpen}>
-              <PopoverTrigger asChild>
+              <PopoverTrigger className="bg-transparent" asChild>
                 <Button
                   variant="outline"
                   role="combobox"

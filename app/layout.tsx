@@ -6,6 +6,7 @@ import { Providers } from "./providers";
 import { Header } from "@/components/landing/header";
 import ScrollToTop from "@/components/scroll-to-top";
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { PropertyChat } from "@/components/chat/property-chat";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
             <Header />
             {children}
             <ScrollToTop />
+            <PropertyChat />
             <Toaster />
           </Providers>
         </NuqsAdapter>
