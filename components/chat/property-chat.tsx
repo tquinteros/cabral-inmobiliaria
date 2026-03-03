@@ -10,6 +10,7 @@ import {
   BedDoubleIcon,
   SquareIcon,
   ArrowRightIcon,
+  Trash2Icon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,6 +18,17 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import type { TokkoProperty } from "@/types/property";
 import type { ChatResponseBody } from "@/app/api/chat/route";
@@ -169,6 +181,18 @@ export function PropertyChat() {
     }
   }, [isOpen]);
 
+  const handleClearChat = useCallback(() => {
+    setMessages([INITIAL_MESSAGE]);
+    setInput("");
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem(CHAT_STORAGE_KEY);
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }, []);
+
   const sendMessage = useCallback(async () => {
     const trimmed = input.trim();
     if (!trimmed || isLoading) return;
@@ -262,15 +286,48 @@ export function PropertyChat() {
             </p>
             <p className="text-xs opacity-75">Cabral Inmobiliaria</p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setIsOpen(false)}
-            className="ml-auto shrink-0 rounded-full text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
-            aria-label="Cerrar chat"
-          >
-            <XIcon className="size-4" />
-          </Button>
+          <div className="ml-auto flex items-center gap-1.5 shrink-0">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-full text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
+                  aria-label="Borrar historial de chat"
+                >
+                  <Trash2Icon className="size-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent size="sm">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    ¿Borrar historial del chat?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acción eliminará todas las conversaciones del asistente.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    variant="destructive"
+                    onClick={handleClearChat}
+                  >
+                    Borrar historial
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setIsOpen(false)}
+              className="rounded-full text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
+              aria-label="Cerrar chat"
+            >
+              <XIcon className="size-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth">
