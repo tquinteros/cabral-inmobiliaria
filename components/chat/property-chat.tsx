@@ -16,9 +16,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { TokkoProperty } from "@/types/property";
 import type { ChatResponseBody } from "@/app/api/chat/route";
+
+const CHAT_STORAGE_KEY = "cabral-property-chat-v1";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -33,6 +36,19 @@ const INITIAL_MESSAGE: ChatMessage = {
   content:
     "¡Hola! Soy el asistente de Cabral Inmobiliaria 👋\n\nPodés decirme qué propiedad estás buscando en español. Por ejemplo:\n\n• \"Busco un departamento en venta en Palermo\"\n• \"Necesito una casa para alquilar en Belgrano hasta 800 USD\"\n• \"Quiero comprar un local en Villa Urquiza\"",
 };
+
+function formatMessageToHtml(content: string): string {
+  let html = content
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+  html = html.replace(/\n/g, "<br />");
+
+  return html;
+}
 
 function buildPropertiesUrl(
   searchParams?: ChatResponseBody["searchParams"]
@@ -61,11 +77,8 @@ function PropertyMiniCard({ property }: { property: TokkoProperty }) {
     .includes("rent");
 
   return (
-    <Link
-      href={`/propiedades/${property.id}`}
-      className="block rounded-xl border bg-background hover:bg-muted/60 transition-colors overflow-hidden"
-    >
-      <div className="flex gap-0">
+    <Card className="overflow-hidden gap-0 py-0 shadow-none hover:bg-muted/40 transition-colors">
+      <Link href={`/propiedades/${property.id}`} className="flex">
         <div className="relative h-20 w-24 shrink-0 overflow-hidden bg-muted">
           <Image
             src={imageUrl}
@@ -83,7 +96,7 @@ function PropertyMiniCard({ property }: { property: TokkoProperty }) {
             </Badge>
           </div>
         </div>
-        <div className="flex flex-1 flex-col justify-center gap-0.5 min-w-0 px-3 py-2">
+        <CardContent className="flex flex-1 flex-col justify-center gap-0.5 min-w-0 px-3 py-2">
           <p className="text-xs font-semibold line-clamp-2 leading-tight">
             {property.publication_title ??
               `${property.type?.name ?? "Propiedad"} en ${property.location?.short_location ?? "—"}`}
@@ -109,9 +122,9 @@ function PropertyMiniCard({ property }: { property: TokkoProperty }) {
           <p className="text-xs font-bold text-primary mt-0.5">
             {property.web_price ?? "Consultar precio"}
           </p>
-        </div>
-      </div>
-    </Link>
+        </CardContent>
+      </Link>
+    </Card>
   );
 }
 
@@ -124,10 +137,31 @@ export function PropertyChat() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const stored = window.localStorage.getItem(CHAT_STORAGE_KEY);
+      if (!stored) return;
+      const parsed = JSON.parse(stored) as ChatMessage[] | unknown;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        setMessages(parsed as ChatMessage[]);
+      }
+    } catch {
+    }
+  }, []);
+
+  useEffect(() => {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+    } catch {
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (isOpen) {
@@ -197,13 +231,10 @@ export function PropertyChat() {
 
   return (
     <>
-      {/* Floating toggle button */}
-      <button
+      <Button
         onClick={() => setIsOpen((v) => !v)}
-        className={cn(
-          "fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95",
-          "bg-primary text-primary-foreground"
-        )}
+        size="icon"
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
         aria-label={isOpen ? "Cerrar chat" : "Abrir asistente inmobiliario"}
       >
         {isOpen ? (
@@ -211,19 +242,16 @@ export function PropertyChat() {
         ) : (
           <MessageCircleIcon className="size-6" />
         )}
-      </button>
-
-      {/* Chat panel */}
-      <div
+      </Button>
+      <Card
         className={cn(
-          "fixed bottom-24 right-6 z-50 flex flex-col rounded-2xl border bg-background shadow-2xl overflow-hidden transition-all duration-300 origin-bottom-right",
+          "fixed bottom-24 right-6 z-50 flex flex-col rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 origin-bottom-right gap-0 py-0",
           "w-[360px] sm:w-[400px]",
           isOpen
             ? "opacity-100 scale-100 h-[580px] pointer-events-auto"
             : "opacity-0 scale-95 h-0 pointer-events-none"
         )}
       >
-        {/* Header */}
         <div className="flex shrink-0 items-center gap-3 bg-primary px-4 py-3 text-primary-foreground">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-foreground/20">
             <HomeIcon className="size-5" />
@@ -234,16 +262,17 @@ export function PropertyChat() {
             </p>
             <p className="text-xs opacity-75">Cabral Inmobiliaria</p>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon-sm"
             onClick={() => setIsOpen(false)}
-            className="ml-auto shrink-0 rounded-full p-1 hover:bg-primary-foreground/20 transition-colors"
+            className="ml-auto shrink-0 rounded-full text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
             aria-label="Cerrar chat"
           >
             <XIcon className="size-4" />
-          </button>
+          </Button>
         </div>
 
-        {/* Messages area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth">
           {messages.map((msg, i) => (
             <div
@@ -266,22 +295,28 @@ export function PropertyChat() {
                     : "bg-muted rounded-bl-sm"
                 )}
               >
-                <p className="whitespace-pre-wrap wrap-break-word">{msg.content}</p>
+                <p
+                  className="whitespace-pre-wrap wrap-break-word"
+                  dangerouslySetInnerHTML={{ __html: formatMessageToHtml(msg.content) }}
+                />
 
-                {/* Property result cards */}
                 {msg.properties && msg.properties.length > 0 && (
                   <div className="mt-3 space-y-2">
                     {msg.properties.slice(0, 10).map((property) => (
                       <PropertyMiniCard key={property.id} property={property} />
                     ))}
                     {msg.total != null && msg.total > 10 && (
-                      <Link
-                        href={buildPropertiesUrl(msg.searchParams)}
-                        className="flex items-center justify-center gap-1.5 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10 transition-colors"
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="w-full text-xs"
                       >
-                        Ver las {msg.total} propiedades encontradas
-                        <ArrowRightIcon className="size-3" />
-                      </Link>
+                        <Link href={buildPropertiesUrl(msg.searchParams)}>
+                          Ver las {msg.total} propiedades encontradas
+                          <ArrowRightIcon className="size-3" />
+                        </Link>
+                      </Button>
                     )}
                   </div>
                 )}
@@ -303,7 +338,6 @@ export function PropertyChat() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input area */}
         <div className="shrink-0 border-t bg-background p-3">
           <div className="flex gap-2 items-end">
             <Textarea
@@ -326,11 +360,11 @@ export function PropertyChat() {
               <SendIcon className="size-4" />
             </Button>
           </div>
-          <p className="mt-2 text-center text-[10px] text-muted-foreground">
+          {/* <p className="mt-2 text-center text-[10px] text-muted-foreground">
             Escribí tu consulta en español
-          </p>
+          </p> */}
         </div>
-      </div>
+      </Card>
     </>
   );
 }
